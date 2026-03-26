@@ -22,6 +22,10 @@ Typical use cases include:
 
 This repository is focused on integrity verification, not on general-purpose cryptographic coverage.
 
+## Pre-built WebAssembly Port
+
+[Release Page](https://github.com/sxysxy/libsodium_ed25519_sign/releases/)
+
 ## API
 
 ```c

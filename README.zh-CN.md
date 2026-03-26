@@ -22,6 +22,10 @@
 
 这个仓库聚焦于“完整性校验”场景，而不是提供一个通用的大而全密码学库。
 
+## 预构建的WebAssembly版本
+
+[Release页](https://github.com/sxysxy/libsodium_ed25519_sign/releases/)
+
 ## 接口
 
 ```c

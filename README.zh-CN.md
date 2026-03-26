@@ -81,20 +81,24 @@ cc -std=c99 -O2 your_file.c ed25519_sign.c -o your_program
 #include "ed25519_sign.h"
 ```
 
-根据一个整数种子初始化 `rand()`，再生成一对公私钥：
+直接随机生成一对 Ed25519 公私钥：
 
 ```sh
 cc -std=c99 -O2 gen_keypair.c -o gen_keypair
-./gen_keypair 12345
+./gen_keypair
 ```
 
 这个工具会：
 
-- 用你输入的整数初始化 C 标准库 `rand()`
-- 生成一个 32 字节 Ed25519 seed
+- 使用操作系统提供的安全随机源生成一个 32 字节 Ed25519 seed
 - 输出生成出来的 32 字节私钥和 32 字节公钥
 
-这个方式适合测试和演示，不适合生产环境下的安全密钥生成。
+随机源说明：
+
+- Linux/macOS: `/dev/urandom`
+- Windows: `BCryptGenRandom`
+
+这里输出的 `private_key` 就是 32 字节 Ed25519 seed。
 
 构建文件签名和验签工具：
 

@@ -81,20 +81,24 @@ Header-only, please copy the contants in the folder single-header-only, then:
 #include "ed25519_sign.h"
 ```
 
-Generate a keypair from an integer seed for `rand()`:
+Generate a random Ed25519 keypair:
 
 ```sh
 cc -std=c99 -O2 gen_keypair.c -o gen_keypair
-./gen_keypair 12345
+./gen_keypair
 ```
 
 The tool will:
 
-- seed C `rand()` with the integer you provide
-- generate a 32-byte Ed25519 seed
+- generate a 32-byte Ed25519 seed using the operating system RNG
 - print the generated 32-byte private key and 32-byte public key
 
-This is for testing/demo convenience, not for production-grade key generation.
+Random source:
+
+- Linux/macOS: `/dev/urandom`
+- Windows: `BCryptGenRandom`
+
+The printed `private_key` is the 32-byte Ed25519 seed.
 
 Build the file signing and verification tools:
 

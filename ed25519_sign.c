@@ -20,7 +20,11 @@ typedef struct crypto_hash_sha512_state {
 
 #define COMPILER_ASSERT(X) (void) sizeof(char[(X) ? 1 : -1])
 
+#if defined(_MSC_VER)
+#define CRYPTO_ALIGN(x) __declspec(align(x))
+#else
 #define CRYPTO_ALIGN(x) __attribute__((aligned(x)))
+#endif
 #define ACQUIRE_FENCE (void) 0
 
 #define ROTR64(X, B) rotr64((X), (B))

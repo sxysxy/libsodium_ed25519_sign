@@ -6,24 +6,24 @@
 #include <stdlib.h>
 #include <string.h>
 
-int ed25519_sign(const unsigned char private_key[32],
-                 const unsigned char *data,
-                 size_t data_len,
-                 unsigned char signature[64]);
+static int ed25519_sign(const unsigned char private_key[32],
+                        const unsigned char *data,
+                        size_t data_len,
+                        unsigned char signature[64]);
 
-int ed25519_verify(const unsigned char public_key[32],
-                   const unsigned char *data,
-                   size_t data_len,
-                   const unsigned char signature[64]);
+static int ed25519_verify(const unsigned char public_key[32],
+                          const unsigned char *data,
+                          size_t data_len,
+                          const unsigned char signature[64]);
 
-int ed25519_util_hex2bytes(unsigned char *out,
-                           size_t out_len,
-                           const char *hex);
+static int ed25519_util_hex2bytes(unsigned char *out,
+                                  size_t out_len,
+                                  const char *hex);
 
-void sodium_memzero(void *pnt, size_t len);
-int sodium_memcmp(const void *b1_, const void *b2_, size_t len);
-int sodium_is_zero(const unsigned char *n, size_t nlen);
-int crypto_verify_32(const unsigned char *x, const unsigned char *y);
+static void sodium_memzero(void *pnt, size_t len);
+static int sodium_memcmp(const void *b1_, const void *b2_, size_t len);
+static int sodium_is_zero(const unsigned char *n, size_t nlen);
+static int crypto_verify_32(const unsigned char *x, const unsigned char *y);
 
 typedef struct crypto_hash_sha512_state {
     uint64_t state[8];
@@ -71,7 +71,7 @@ static inline void store64_be(uint8_t dst[8], uint64_t w)
     dst[0] = (uint8_t) w;
 }
 
-void sodium_memzero(void *pnt, size_t len)
+static void sodium_memzero(void *pnt, size_t len)
 {
     volatile unsigned char *p = (volatile unsigned char *) pnt;
     while (len-- > 0U) {
@@ -79,7 +79,7 @@ void sodium_memzero(void *pnt, size_t len)
     }
 }
 
-int sodium_memcmp(const void *b1_, const void *b2_, size_t len)
+static int sodium_memcmp(const void *b1_, const void *b2_, size_t len)
 {
     const volatile unsigned char *b1 = (const volatile unsigned char *) b1_;
     const volatile unsigned char *b2 = (const volatile unsigned char *) b2_;
@@ -92,7 +92,7 @@ int sodium_memcmp(const void *b1_, const void *b2_, size_t len)
     return (1 & ((d - 1U) >> 8)) - 1;
 }
 
-int sodium_is_zero(const unsigned char *n, size_t nlen)
+static int sodium_is_zero(const unsigned char *n, size_t nlen)
 {
     size_t i;
     volatile unsigned char d = 0U;
@@ -103,7 +103,7 @@ int sodium_is_zero(const unsigned char *n, size_t nlen)
     return 1 & ((d - 1U) >> 8);
 }
 
-int crypto_verify_32(const unsigned char *x, const unsigned char *y)
+static int crypto_verify_32(const unsigned char *x, const unsigned char *y)
 {
     volatile uint16_t d = 0U;
     int i;
@@ -129,7 +129,7 @@ ed25519_hex_value(const char c)
     return -1;
 }
 
-int
+static inline int
 ed25519_util_hex2bytes(unsigned char *out, size_t out_len, const char *hex)
 {
     size_t i;
@@ -153,9 +153,9 @@ ed25519_util_hex2bytes(unsigned char *out, size_t out_len, const char *hex)
 
 typedef int32_t fe25519[10];
 
-void fe25519_invert(fe25519 out, const fe25519 z);
-void fe25519_frombytes(fe25519 h, const unsigned char *s);
-void fe25519_tobytes(unsigned char *s, const fe25519 h);
+static void fe25519_invert(fe25519 out, const fe25519 z);
+static void fe25519_frombytes(fe25519 h, const unsigned char *s);
+static void fe25519_tobytes(unsigned char *s, const fe25519 h);
 
 /*
  ge means group element.
@@ -204,31 +204,31 @@ typedef struct {
     fe25519 T2d;
 } ge25519_cached;
 
-void ge25519_tobytes(unsigned char *s, const ge25519_p2 *h);
+static void ge25519_tobytes(unsigned char *s, const ge25519_p2 *h);
 
-void ge25519_p3_tobytes(unsigned char *s, const ge25519_p3 *h);
+static void ge25519_p3_tobytes(unsigned char *s, const ge25519_p3 *h);
 
-int ge25519_frombytes_negate_vartime(ge25519_p3 *h, const unsigned char *s);
+static int ge25519_frombytes_negate_vartime(ge25519_p3 *h, const unsigned char *s);
 
-void ge25519_p3_to_cached(ge25519_cached *r, const ge25519_p3 *p);
+static void ge25519_p3_to_cached(ge25519_cached *r, const ge25519_p3 *p);
 
-void ge25519_p1p1_to_p2(ge25519_p2 *r, const ge25519_p1p1 *p);
+static void ge25519_p1p1_to_p2(ge25519_p2 *r, const ge25519_p1p1 *p);
 
-void ge25519_p1p1_to_p3(ge25519_p3 *r, const ge25519_p1p1 *p);
+static void ge25519_p1p1_to_p3(ge25519_p3 *r, const ge25519_p1p1 *p);
 
-void ge25519_add(ge25519_p1p1 *r, const ge25519_p3 *p, const ge25519_cached *q);
+static void ge25519_add(ge25519_p1p1 *r, const ge25519_p3 *p, const ge25519_cached *q);
 
-void ge25519_sub(ge25519_p1p1 *r, const ge25519_p3 *p, const ge25519_cached *q);
+static void ge25519_sub(ge25519_p1p1 *r, const ge25519_p3 *p, const ge25519_cached *q);
 
-void ge25519_scalarmult_base(ge25519_p3 *h, const unsigned char *a);
+static void ge25519_scalarmult_base(ge25519_p3 *h, const unsigned char *a);
 
-void ge25519_double_scalarmult_vartime(ge25519_p2 *r, const unsigned char *a,
-                                       const ge25519_p3 *A,
-                                       const unsigned char *b);
+static void ge25519_double_scalarmult_vartime(ge25519_p2 *r, const unsigned char *a,
+                                              const ge25519_p3 *A,
+                                              const unsigned char *b);
 
-int ge25519_is_canonical(const unsigned char *s);
+static int ge25519_is_canonical(const unsigned char *s);
 
-int ge25519_has_small_order(const unsigned char s[32]);
+static int ge25519_has_small_order(const unsigned char s[32]);
 
 /*
  Ristretto group
@@ -239,12 +239,12 @@ int ge25519_has_small_order(const unsigned char s[32]);
  where l = 2^252 + 27742317777372353535851937790883648493.
  */
 
-void sc25519_reduce(unsigned char s[64]);
+static void sc25519_reduce(unsigned char s[64]);
 
-void sc25519_muladd(unsigned char s[32], const unsigned char a[32],
-                    const unsigned char b[32], const unsigned char c[32]);
+static void sc25519_muladd(unsigned char s[32], const unsigned char a[32],
+                           const unsigned char b[32], const unsigned char c[32]);
 
-int sc25519_is_canonical(const unsigned char s[32]);
+static int sc25519_is_canonical(const unsigned char s[32]);
 
 /*
  h = 0
@@ -4783,10 +4783,11 @@ ed25519_seed_keypair(unsigned char pk[32], unsigned char sk[64],
     memmove(sk + 32, pk, 32);
 }
 
-int ed25519_sign(const unsigned char private_key[32],
-         const unsigned char *data,
-         size_t data_len,
-         unsigned char signature[64])
+static inline int
+ed25519_sign(const unsigned char private_key[32],
+             const unsigned char *data,
+             size_t data_len,
+             unsigned char signature[64])
 {
     unsigned char pk[32];
     unsigned char sk[64];
@@ -4801,14 +4802,34 @@ int ed25519_sign(const unsigned char private_key[32],
     return ret;
 }
 
-int ed25519_verify(const unsigned char public_key[32],
-           const unsigned char *data,
-           size_t data_len,
-           const unsigned char signature[64])
+static inline int
+ed25519_verify(const unsigned char public_key[32],
+               const unsigned char *data,
+               size_t data_len,
+               const unsigned char signature[64])
 {
     return crypto_sign_ed25519_verify_detached(signature, data,
                                                (unsigned long long) data_len,
                                                public_key) == 0;
 }
+
+#undef crypto_hash_sha512_BYTES
+#undef COMPILER_ASSERT
+#undef CRYPTO_ALIGN
+#undef ACQUIRE_FENCE
+#undef ROTR64
+#undef LOAD64_BE
+#undef STORE64_BE
+#undef Ch
+#undef Maj
+#undef SHR
+#undef ROTR
+#undef S0
+#undef S1
+#undef s0
+#undef s1
+#undef RND
+#undef RNDr
+#undef MSCH
 
 #endif

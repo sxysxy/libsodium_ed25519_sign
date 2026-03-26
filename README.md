@@ -4,6 +4,24 @@
 
 A minimal Ed25519 signing and verification extraction derived from libsodium.
 
+## Why This Repository Exists
+
+This repository exists to keep only the minimum code needed for data signing and signature verification.
+
+The goal is practical:
+
+- reduce dependency surface
+- keep the code path focused on the sign/verify use case
+- make static linking(Avoid dynamic linking injection bypassing verify) and code review easier
+- avoid carrying the rest of the libsodium library when only Ed25519 signature verification is needed
+
+Typical use cases include:
+
+- checking that communication payloads have not been tampered with in transit
+- verifying that a software activation key or license payload has not been modified
+
+This repository is focused on integrity verification, not on general-purpose cryptographic coverage.
+
 ## API
 
 ```c

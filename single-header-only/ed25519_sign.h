@@ -1311,7 +1311,7 @@ SHA512_Pad(crypto_hash_sha512_state *state, uint64_t tmp64[80 + 8])
     SHA512_Transform(state->state, state->buf, &tmp64[0], &tmp64[80]);
 }
 
-int
+static int
 crypto_hash_sha512_init(crypto_hash_sha512_state *state)
 {
     static const uint64_t sha512_initial_state[8] = {
@@ -1326,7 +1326,7 @@ crypto_hash_sha512_init(crypto_hash_sha512_state *state)
     return 0;
 }
 
-int
+static int
 crypto_hash_sha512_update(crypto_hash_sha512_state *state,
                           const unsigned char *in, unsigned long long inlen)
 {
@@ -1376,7 +1376,7 @@ crypto_hash_sha512_update(crypto_hash_sha512_state *state,
     return 0;
 }
 
-int
+static int
 crypto_hash_sha512_final(crypto_hash_sha512_state *state, unsigned char *out)
 {
     uint64_t tmp64[80 + 8];
@@ -1389,7 +1389,7 @@ crypto_hash_sha512_final(crypto_hash_sha512_state *state, unsigned char *out)
     return 0;
 }
 
-int
+static inline int
 crypto_hash_sha512(unsigned char *out, const unsigned char *in,
                    unsigned long long inlen)
 {

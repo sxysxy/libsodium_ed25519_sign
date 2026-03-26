@@ -92,6 +92,42 @@ cc -std=c99 -O2 gen_keypair.c -o gen_keypair
 
 这个方式适合测试和演示，不适合生产环境下的安全密钥生成。
 
+构建文件签名和验签工具：
+
+```sh
+./build_sign_verify.sh cc
+```
+
+会生成：
+
+- `sign_file`
+- `verify_file`
+
+使用方式：
+
+```sh
+./sign_file <private_key_hex> <file_path>
+./verify_file <public_key_hex> <signature_hex> <file_path>
+```
+
+构建浏览器 wasm 版本：
+
+```sh
+./build_sign_verify.sh wasm
+```
+
+这个步骤依赖 Emscripten 的 `emcc`。构建完成后会生成：
+
+- `dist/web/index.html`
+- `dist/web/ed25519_wasm.js`
+- `dist/web/ed25519_wasm.wasm`
+
+然后用任意静态文件服务器（例如live-server, nginx, 或是通过python -m http.server）打开 `dist/web/index.html` 即可。
+页面包含两个 tab：
+
+- `Sign`
+- `Verify`
+
 ## 测试说明
 
 `test.c` 支持两种模式：

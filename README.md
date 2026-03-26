@@ -92,6 +92,42 @@ The tool will:
 
 This is for testing/demo convenience, not for production-grade key generation.
 
+Build the file signing and verification tools:
+
+```sh
+./build_sign_verify.sh cc
+```
+
+This produces:
+
+- `sign_file`
+- `verify_file`
+
+Usage:
+
+```sh
+./sign_file <private_key_hex> <file_path>
+./verify_file <public_key_hex> <signature_hex> <file_path>
+```
+
+Build the browser wasm version:
+
+```sh
+./build_sign_verify.sh wasm
+```
+
+This requires `emcc` from Emscripten. The wasm build produces:
+
+- `dist/web/index.html`
+- `dist/web/ed25519_wasm.js`
+- `dist/web/ed25519_wasm.wasm`
+
+Then serve `dist/web` with any static file server(e.g. live-server, nginx, python -m http.server) and open `index.html`.
+The UI contains two tabs:
+
+- `Sign`
+- `Verify`
+
 ## Test
 
 `test.c` supports two modes:

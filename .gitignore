@@ -1,3 +1,8 @@
 test_header_only
 test_separate
 gen_keypair
+sign_file
+verify_file
+.verify_sign_file
+dist/
+.DS_Store

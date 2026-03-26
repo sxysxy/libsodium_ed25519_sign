@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ed25519 Sign / Verify</title>
+  <style>
+    :root {
+      --bg: #f3efe7;
+      --panel: #fffaf2;
+      --line: #d9cdb8;
+      --ink: #1d1a16;
+      --muted: #6c6256;
+      --accent: #a14a1a;
+      --accent-2: #1d6b57;
+      --error: #a12626;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(161, 74, 26, 0.12), transparent 28rem),
+        radial-gradient(circle at bottom right, rgba(29, 107, 87, 0.14), transparent 24rem),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    .wrap {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1;
+      letter-spacing: 0.02em;
+    }
+
+    .sub {
+      margin: 0 0 24px;
+      color: var(--muted);
+    }
+
+    .card {
+      background: rgba(255, 250, 242, 0.88);
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+      box-shadow: 0 18px 50px rgba(29, 26, 22, 0.08);
+      backdrop-filter: blur(10px);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .tab {
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    .tab.active {
+      background: var(--ink);
+      color: #fffaf2;
+      border-color: var(--ink);
+    }
+
+    .pane {
+      display: none;
+    }
+
+    .pane.active {
+      display: block;
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font: inherit;
+      color: var(--ink);
+      background: #fffdf8;
+    }
+
+    textarea {
+      min-height: 108px;
+      resize: vertical;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button.run {
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+    }
+
+    .sign-btn {
+      background: var(--accent);
+    }
+
+    .verify-btn {
+      background: var(--accent-2);
+    }
+
+    .status {
+      min-height: 24px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .status.error {
+      color: var(--error);
+    }
+
+    .status.success {
+      color: var(--accent-2);
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    @media (max-width: 640px) {
+      .wrap {
+        padding: 24px 14px 36px;
+      }
+
+      .card {
+        padding: 16px;
+        border-radius: 18px;
+      }
+
+      .tabs {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Ed25519 Sign / Verify</h1>
+    <p class="sub">Build with wasm, then sign or verify a local file directly in the browser.</p>
+
+    <div class="card">
+      <div class="tabs">
+        <button class="tab active" data-tab="sign">Sign</button>
+        <button class="tab" data-tab="verify">Verify</button>
+      </div>
+
+      <section class="pane active" id="pane-sign">
+        <div class="grid">
+          <div>
+            <label for="sign-private-key">Private Key Hex</label>
+            <input id="sign-private-key" type="text" placeholder="64 hex chars">
+          </div>
+          <div>
+            <label for="sign-file">File</label>
+            <input id="sign-file" type="file">
+          </div>
+          <div class="actions">
+            <button class="run sign-btn" id="sign-run">Sign File</button>
+            <span class="status" id="sign-status">Runtime not loaded</span>
+          </div>
+          <div>
+            <label for="sign-output">Signature Hex</label>
+            <textarea id="sign-output" readonly placeholder="128 hex chars"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <section class="pane" id="pane-verify">
+        <div class="grid">
+          <div>
+            <label for="verify-public-key">Public Key Hex</label>
+            <input id="verify-public-key" type="text" placeholder="64 hex chars">
+          </div>
+          <div>
+            <label for="verify-signature">Signature Hex</label>
+            <textarea id="verify-signature" placeholder="128 hex chars"></textarea>
+          </div>
+          <div>
+            <label for="verify-file">File</label>
+            <input id="verify-file" type="file">
+          </div>
+          <div class="actions">
+            <button class="run verify-btn" id="verify-run">Verify File</button>
+            <span class="status" id="verify-status">Runtime not loaded</span>
+          </div>
+        </div>
+      </section>
+
+      <p class="hint">Native CLI remains available through `sign_file` and `verify_file`. The browser UI depends on `emcc` output files being present next to this page.</p>
+    </div>
+  </div>
+
+  <script>
+    const statusEls = {
+      sign: document.getElementById("sign-status"),
+      verify: document.getElementById("verify-status")
+    };
+
+    function setStatus(kind, text, cls) {
+      const el = statusEls[kind];
+      el.textContent = text;
+      el.className = "status" + (cls ? " " + cls : "");
+    }
+
+    function setAllStatus(text, cls) {
+      setStatus("sign", text, cls);
+      setStatus("verify", text, cls);
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll(".tab").forEach((el) => {
+        el.classList.toggle("active", el.dataset.tab === tab);
+      });
+      document.getElementById("pane-sign").classList.toggle("active", tab === "sign");
+      document.getElementById("pane-verify").classList.toggle("active", tab === "verify");
+    }
+
+    document.querySelectorAll(".tab").forEach((el) => {
+      el.addEventListener("click", () => switchTab(el.dataset.tab));
+    });
+
+    let runtimeReady = false;
+
+    var Module = {
+      onRuntimeInitialized() {
+        runtimeReady = true;
+        setAllStatus("Runtime ready", "success");
+      }
+    };
+
+    function ensureRuntime(kind) {
+      if (!runtimeReady) {
+        setStatus(kind, "Runtime not ready", "error");
+        return false;
+      }
+      return true;
+    }
+
+    function withCString(str, fn) {
+      const len = Module.lengthBytesUTF8(str) + 1;
+      const ptr = Module._malloc(len);
+      Module.stringToUTF8(str, ptr, len);
+      try {
+        return fn(ptr);
+      } finally {
+        Module._free(ptr);
+      }
+    }
+
+    function withBytes(bytes, fn) {
+      const ptr = Module._malloc(bytes.length || 1);
+      if (bytes.length > 0) {
+        Module.HEAPU8.set(bytes, ptr);
+      }
+      try {
+        return fn(ptr, bytes.length);
+      } finally {
+        Module._free(ptr);
+      }
+    }
+
+    async function readSelectedFile(input) {
+      if (!input.files || input.files.length === 0) {
+        throw new Error("Please choose a file");
+      }
+      const buffer = await input.files[0].arrayBuffer();
+      return new Uint8Array(buffer);
+    }
+
+    document.getElementById("sign-run").addEventListener("click", async () => {
+      if (!ensureRuntime("sign")) {
+        return;
+      }
+      setStatus("sign", "Signing...", "");
+
+      try {
+        const privateKeyHex = document.getElementById("sign-private-key").value.trim();
+        const fileBytes = await readSelectedFile(document.getElementById("sign-file"));
+
+        withCString(privateKeyHex, (keyPtr) => {
+          withBytes(fileBytes, (dataPtr, dataLen) => {
+            const outPtr = Module._malloc(129);
+            try {
+              const rc = Module._wasm_sign_hex(keyPtr, dataPtr, dataLen, outPtr);
+              if (rc !== 0) {
+                throw new Error("Signing failed, check private key format");
+              }
+              document.getElementById("sign-output").value = Module.UTF8ToString(outPtr);
+            } finally {
+              Module._free(outPtr);
+            }
+          });
+        });
+
+        setStatus("sign", "Signature created", "success");
+      } catch (err) {
+        setStatus("sign", err.message, "error");
+      }
+    });
+
+    document.getElementById("verify-run").addEventListener("click", async () => {
+      if (!ensureRuntime("verify")) {
+        return;
+      }
+      setStatus("verify", "Verifying...", "");
+
+      try {
+        const publicKeyHex = document.getElementById("verify-public-key").value.trim();
+        const signatureHex = document.getElementById("verify-signature").value.trim();
+        const fileBytes = await readSelectedFile(document.getElementById("verify-file"));
+
+        const rc = withCString(publicKeyHex, (keyPtr) => {
+          return withCString(signatureHex, (sigPtr) => {
+            return withBytes(fileBytes, (dataPtr, dataLen) => {
+              return Module._wasm_verify_hex(keyPtr, dataPtr, dataLen, sigPtr);
+            });
+          });
+        });
+
+        if (rc === 1) {
+          setStatus("verify", "verified", "success");
+        } else if (rc === 0) {
+          setStatus("verify", "failed", "error");
+        } else {
+          setStatus("verify", "Verification failed, check key/signature format", "error");
+        }
+      } catch (err) {
+        setStatus("verify", err.message, "error");
+      }
+    });
+  </script>
+  <script src="ed25519_wasm.js"></script>
+</body>
+</html>
